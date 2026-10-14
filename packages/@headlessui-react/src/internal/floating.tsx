@@ -9,6 +9,7 @@ import {
   useInnerOffset,
   useInteractions,
   type InnerProps,
+  type MiddlewareState,
   type UseFloatingReturn,
 } from '@floating-ui/react'
 import * as React from 'react'
@@ -215,6 +216,29 @@ export function FloatingProvider({
     transform: false,
 
     middleware: [
+      // The `size` middleware below caps the panel with an inline `max-height` that stays on the
+      // element. When the panel's content grows after it was placed (e.g. results that load after
+      // opening), the panel can only grow up to that stale cap, so `flip` keeps measuring a panel
+      // that fits and never moves it to the side with more room. If the panel has reached its cap,
+      // we lift it back to `--anchor-max-height` and measure again before anything places it.
+      //
+      // This only runs once per placement: `size` requests its own reset after capping the panel,
+      // which would otherwise lift the cap again until Floating UI's reset limit. A panel below
+      // its cap (`none` parses to `NaN`) is already measured at its full height.
+      to !== 'selection' && {
+        name: 'measureUncapped',
+        fn({ elements, middlewareData }: MiddlewareState) {
+          let panel = elements.floating
+          if (middlewareData.measureUncapped || !panel.style.maxHeight) return {}
+
+          let cap = parseFloat(getComputedStyle(panel).maxHeight)
+          if (!(panel.getBoundingClientRect().height >= cap - 1)) return {}
+
+          panel.style.maxHeight = 'var(--anchor-max-height, none)'
+          return { reset: { rects: true } }
+        },
+      },
+
       // - The `mainAxis` is set to `gap` which defines the gap between the panel and the
       //   trigger/reference.
       // - The `crossAxis` is set to `offset` which nudges the panel from its original position.
