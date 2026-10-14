@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Flip anchored elements to the side with more room when their content grows after opening ([#3904](https://github.com/tailwindlabs/headlessui/issues/3904))
+- Flip anchored elements to the side with more room when their content grows after opening ([#3905](https://github.com/tailwindlabs/headlessui/pull/3905))
 
 ## [2.2.10] - 2026-04-07
 
